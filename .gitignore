@@ -1,0 +1,88 @@
+# Common
+.DS_Store
+*.log
+*.swp
+*.swo
+.env
+.env.*
+!.env.example
+tmp/
+temp/
+*.tmp
+
+# Rust (backend/auth-service)
+**/target/
+**/*.rs.bk
+**/Cargo.lock
+**/.sqlx/
+
+# Java/Spring (backend/sigboard-service)
+**/build/
+**/.gradle/
+**/out/
+**/*.class
+**/*.jar
+**/hs_err_pid*
+**/gradle-wrapper.jar
+**/.gradle-wrapper/
+**/build/
+**/bin/
+
+# JavaScript/TypeScript (frontend)
+**/node_modules/
+**/dist/
+**/build/
+**/coverage/
+**/.next/
+**/.nuxt/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# IDE files
+.idea/
+.vscode/
+*.sublime-*
+*.code-workspace
+.project
+.classpath
+.settings/
+.metadata/
+
+# Kubernetes
+**/kubeconfig
+kubectl
+
+# Docker
+.docker/
+*.dockerfile.cache
+
+# Secrets
+*.pem
+*.key
+**/secrets/*
+**/.dockerignore
+
+# Dependency lock files (except package-lock.json which should be committed)
+**/yarn.lock
+**/pnpm-lock.yaml
+**/bun.lockb
+
+# Testing
+**/coverage/
+**/.nyc_output/
+**/cucumber-report/
+**/junit/
+**/test-results.xml
+**/testReport/
+
+# Build tools
+**/.webpack/
+**/.rollup.cache/
+**/tsconfig.tsbuildinfo
+
+# Miscellaneous
+**/.sass-cache/
+**/.cache/
+**/.parcel-cache/ 

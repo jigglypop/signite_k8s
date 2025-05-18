@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_USER: signite
+      MYSQL_PASSWORD: signite
+      MYSQL_DATABASE: signite
+    volumes:
+      - ./mysql-init:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  auth-service:
+    build: ./auth-service
+    ports:
+      - "8081:8081"
+      - "50051:50051" # gRPC 포트
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8081
+      - GRPC_PORT=50051
+      - DATABASE_URL=mysql://signite:signite@mysql:3306/auth_db
+      - JWT_SECRET=your_development_jwt_secret
+      - JWT_EXPIRES_IN=3600
+      - RUST_LOG=debug
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+  sigboard-service:
+    build: ./sigboard-service
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://mysql:3306/sigboard_db
+      - SPRING_DATASOURCE_USERNAME=signite
+      - SPRING_DATASOURCE_PASSWORD=signite
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
+      - JWT_SECRET=your_development_jwt_secret
+      - AUTH_SERVICE_GRPC_HOST=auth-service
+      - AUTH_SERVICE_GRPC_PORT=50051
+    depends_on:
+      mysql:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  mysql_data: 

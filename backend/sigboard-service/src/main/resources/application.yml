@@ -1,0 +1,44 @@
+server:
+  port: 8082
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: sigboard-service
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/sigboard_db}
+    username: ${SPRING_DATASOURCE_USERNAME:signite}
+    password: ${SPRING_DATASOURCE_PASSWORD:signite}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:com.mysql.cj.jdbc.Driver}
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  secret: ${JWT_SECRET:your_jwt_secret_key_change_in_production}
+  expiration: ${JWT_EXPIRATION:3600} # 1시간
+
+# 인증 서비스 gRPC 설정
+auth-service:
+  grpc:
+    host: ${AUTH_SERVICE_GRPC_HOST:localhost}
+    port: ${AUTH_SERVICE_GRPC_PORT:50051}
+
+springdoc:
+  api-docs:
+    path: /docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+logging:
+  level:
+    root: INFO
+    com.signite: DEBUG
+    io.grpc: INFO 

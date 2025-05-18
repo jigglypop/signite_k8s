@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package auth;
+
+// 인증 서비스 정의
+service AuthService {
+  // 토큰 검증을 위한 RPC
+  rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse) {}
+  
+  // 사용자 정보 조회를 위한 RPC
+  rpc GetUser (GetUserRequest) returns (UserResponse) {}
+  
+  // 사용자 검색을 위한 RPC
+  rpc FindUserByEmail (FindUserByEmailRequest) returns (UserResponse) {}
+}
+
+// 토큰 검증 요청
+message ValidateTokenRequest {
+  string token = 1;
+}
+
+// 토큰 검증 응답
+message ValidateTokenResponse {
+  bool valid = 1;
+  string user_id = 2;
+  string email = 3;
+  string name = 4;
+  int64 expires_at = 5;
+}
+
+// 사용자 정보 요청
+message GetUserRequest {
+  string user_id = 1;
+}
+
+// 이메일로 사용자 검색 요청
+message FindUserByEmailRequest {
+  string email = 1;
+}
+
+// 사용자 정보 응답
+message UserResponse {
+  string id = 1;
+  string email = 2;
+  string name = 3;
+  int64 created_at = 4;
+  bool success = 5;
+  string error_message = 6;
+} 

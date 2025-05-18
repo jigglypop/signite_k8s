@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sigboard-service
+  namespace: signite
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sigboard-service
+  template:
+    metadata:
+      labels:
+        app: sigboard-service
+    spec:
+      containers:
+      - name: sigboard-service
+        image: signite/sigboard-service-dev:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8082
+          name: http
+        env:
+        - name: SPRING_DATASOURCE_URL
+          value: "jdbc:mysql://mysql:3306/sigboard_db"
+        - name: SPRING_DATASOURCE_USERNAME
+          value: "signite"
+        - name: SPRING_DATASOURCE_PASSWORD
+          value: "signite"
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: jwt-secret
+              key: secret
+        - name: AUTH_SERVICE_GRPC_HOST
+          value: "auth-service"
+        - name: AUTH_SERVICE_GRPC_PORT
+          value: "50051"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: sigboard-service
+  namespace: signite
+spec:
+  selector:
+    app: sigboard-service
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8082 

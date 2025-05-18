@@ -1,0 +1,110 @@
+FROM python:3.9-alpine
+
+WORKDIR /app
+
+# 필요한 런타임 의존성 설치
+RUN apk add --no-cache bash curl
+
+# 간단한 HTTP 서버 스크립트 생성
+RUN echo '#!/usr/bin/python3' > /app/http_server.py && \
+    echo 'import http.server' >> /app/http_server.py && \
+    echo 'import json' >> /app/http_server.py && \
+    echo 'import socketserver' >> /app/http_server.py && \
+    echo 'import os' >> /app/http_server.py && \
+    echo 'import uuid' >> /app/http_server.py && \
+    echo 'from datetime import datetime' >> /app/http_server.py && \
+    echo '' >> /app/http_server.py && \
+    echo 'PORT = 8082' >> /app/http_server.py && \
+    echo '' >> /app/http_server.py && \
+    echo '# 간단한 메모리 내 데이터 저장소' >> /app/http_server.py && \
+    echo 'boards = [' >> /app/http_server.py && \
+    echo '    {"id": "1", "title": "테스트 게시판", "description": "테스트용 게시판입니다", "createdAt": "2025-05-18T14:00:00Z"}' >> /app/http_server.py && \
+    echo ']' >> /app/http_server.py && \
+    echo 'posts = []' >> /app/http_server.py && \
+    echo '' >> /app/http_server.py && \
+    echo 'class SigboardHandler(http.server.BaseHTTPRequestHandler):' >> /app/http_server.py && \
+    echo '    def do_POST(self):' >> /app/http_server.py && \
+    echo '        content_length = int(self.headers["Content-Length"])' >> /app/http_server.py && \
+    echo '        post_data = self.rfile.read(content_length)' >> /app/http_server.py && \
+    echo '        data = json.loads(post_data.decode("utf-8"))' >> /app/http_server.py && \
+    echo '        print(f"Received data: {data}")' >> /app/http_server.py && \
+    echo '' >> /app/http_server.py && \
+    echo '        # 게시글 생성 요청 처리' >> /app/http_server.py && \
+    echo '        if self.path == "/api/sigboard/posts":' >> /app/http_server.py && \
+    echo '            post_id = str(uuid.uuid4())' >> /app/http_server.py && \
+    echo '            created_at = datetime.now().isoformat() + "Z"' >> /app/http_server.py && \
+    echo '            new_post = {' >> /app/http_server.py && \
+    echo '                "id": post_id,' >> /app/http_server.py && \
+    echo '                "boardId": data.get("boardId", "1"),' >> /app/http_server.py && \
+    echo '                "title": data.get("title", "제목 없음"),' >> /app/http_server.py && \
+    echo '                "content": data.get("content", ""),' >> /app/http_server.py && \
+    echo '                "authorId": "12345",' >> /app/http_server.py && \
+    echo '                "authorName": "Test User",' >> /app/http_server.py && \
+    echo '                "createdAt": created_at,' >> /app/http_server.py && \
+    echo '                "updatedAt": created_at,' >> /app/http_server.py && \
+    echo '                "status": "ACTIVE"' >> /app/http_server.py && \
+    echo '            }' >> /app/http_server.py && \
+    echo '            posts.append(new_post)' >> /app/http_server.py && \
+    echo '            response = new_post' >> /app/http_server.py && \
+    echo '        # 게시판 생성 요청 처리' >> /app/http_server.py && \
+    echo '        elif self.path == "/api/sigboard/boards":' >> /app/http_server.py && \
+    echo '            board_id = str(uuid.uuid4())' >> /app/http_server.py && \
+    echo '            created_at = datetime.now().isoformat() + "Z"' >> /app/http_server.py && \
+    echo '            new_board = {' >> /app/http_server.py && \
+    echo '                "id": board_id,' >> /app/http_server.py && \
+    echo '                "title": data.get("title", "새 게시판"),' >> /app/http_server.py && \
+    echo '                "description": data.get("description", ""),' >> /app/http_server.py && \
+    echo '                "createdAt": created_at' >> /app/http_server.py && \
+    echo '            }' >> /app/http_server.py && \
+    echo '            boards.append(new_board)' >> /app/http_server.py && \
+    echo '            response = new_board' >> /app/http_server.py && \
+    echo '        # 기타 요청' >> /app/http_server.py && \
+    echo '        else:' >> /app/http_server.py && \
+    echo '            response = {"message": "Unknown endpoint"}' >> /app/http_server.py && \
+    echo '' >> /app/http_server.py && \
+    echo '        self.send_response(200)' >> /app/http_server.py && \
+    echo '        self.send_header("Content-type", "application/json")' >> /app/http_server.py && \
+    echo '        self.send_header("Access-Control-Allow-Origin", "*")' >> /app/http_server.py && \
+    echo '        self.end_headers()' >> /app/http_server.py && \
+    echo '        self.wfile.write(json.dumps(response).encode())' >> /app/http_server.py && \
+    echo '' >> /app/http_server.py && \
+    echo '    def do_OPTIONS(self):' >> /app/http_server.py && \
+    echo '        self.send_response(200)' >> /app/http_server.py && \
+    echo '        self.send_header("Access-Control-Allow-Origin", "*")' >> /app/http_server.py && \
+    echo '        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")' >> /app/http_server.py && \
+    echo '        self.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")' >> /app/http_server.py && \
+    echo '        self.end_headers()' >> /app/http_server.py && \
+    echo '' >> /app/http_server.py && \
+    echo '    def do_GET(self):' >> /app/http_server.py && \
+    echo '        # 게시판 목록 요청 처리' >> /app/http_server.py && \
+    echo '        if self.path == "/api/sigboard/boards":' >> /app/http_server.py && \
+    echo '            response = {"content": boards, "totalElements": len(boards)}' >> /app/http_server.py && \
+    echo '        # 게시글 목록 요청 처리' >> /app/http_server.py && \
+    echo '        elif self.path.startswith("/api/sigboard/posts"):' >> /app/http_server.py && \
+    echo '            response = {"content": posts, "totalElements": len(posts)}' >> /app/http_server.py && \
+    echo '        # 상태 확인' >> /app/http_server.py && \
+    echo '        elif self.path == "/api/health":' >> /app/http_server.py && \
+    echo '            response = {"status": "OK"}' >> /app/http_server.py && \
+    echo '        else:' >> /app/http_server.py && \
+    echo '            response = {"message": "Unknown endpoint"}' >> /app/http_server.py && \
+    echo '' >> /app/http_server.py && \
+    echo '        self.send_response(200)' >> /app/http_server.py && \
+    echo '        self.send_header("Content-type", "application/json")' >> /app/http_server.py && \
+    echo '        self.send_header("Access-Control-Allow-Origin", "*")' >> /app/http_server.py && \
+    echo '        self.end_headers()' >> /app/http_server.py && \
+    echo '        self.wfile.write(json.dumps(response).encode())' >> /app/http_server.py && \
+    echo '' >> /app/http_server.py && \
+    echo 'with socketserver.TCPServer(("", PORT), SigboardHandler) as httpd:' >> /app/http_server.py && \
+    echo '    print(f"Sigboard service is running on port {PORT}")' >> /app/http_server.py && \
+    echo '    httpd.serve_forever()' >> /app/http_server.py && \
+    chmod +x /app/http_server.py
+
+# 시작 스크립트 생성
+RUN echo '#!/bin/bash' > /app/start.sh && \
+    echo 'echo "Starting Sigboard service"' >> /app/start.sh && \
+    echo 'python /app/http_server.py' >> /app/start.sh && \
+    chmod +x /app/start.sh
+
+EXPOSE 8082
+
+CMD ["/app/start.sh"] 
